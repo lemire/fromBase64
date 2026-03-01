@@ -4,11 +4,6 @@ const path = require('path');
 // Load all data at startup
 console.log('Loading data...');
 
-const bingBase64 = fs.readFileSync(path.join(__dirname, 'base64data/images/bing.txt'), 'utf8').trim();
-const googlelogoBase64 = fs.readFileSync(path.join(__dirname, 'base64data/images/googlelogo.txt'), 'utf8').trim();
-
-const dnsLines = fs.readFileSync(path.join(__dirname, 'base64data/dns/swedenzonebase.txt'), 'utf8').trim().split('\n').filter(line => line.trim());
-
 let emailBase64s = [];
 const emailDir = path.join(__dirname, 'base64data/email');
 const emailFiles = fs.readdirSync(emailDir);
@@ -60,17 +55,8 @@ function benchmark(name, fn, iterations = 100) {
 }
 
 // Benchmarks
-// 1. Decode each line of swedenzonebase.txt
-benchmark('Decode each line of swedenzonebase.txt', () => {
-    let total = 0;
-    for (const line of dnsLines) {
-        total += line.length; // Count input size for throughput calculation
-        const decoded = decodeBase64(line);
-    }
-    return total;
-});
 
-// 2. Decode all email content
+// 1. Decode all email content
 benchmark('Decode all email content', () => {
     let total = 0;
     for (const emailBase64 of emailBase64s) {
