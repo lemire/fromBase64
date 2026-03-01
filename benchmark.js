@@ -31,7 +31,7 @@ function decodeBase64(str) {
 }
 
 // Benchmark function
-function benchmark(name, fn, iterations = 1000) {
+function benchmark(name, fn, iterations = 100) {
     console.log(`Running benchmark: ${name}`);
     let totalBytes = 0;
     const times = [];
