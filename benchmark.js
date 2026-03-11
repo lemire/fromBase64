@@ -26,15 +26,24 @@ function decodeBase64(str) {
 }
 
 // Benchmark function
-function benchmark(name, fn, iterations = 100) {
+function benchmark(name, fn, iterations = 1000, warmUpIterations = 1000) {
     console.log(`Running benchmark: ${name}`);
+    
+    // Warm-up phase
+    console.log(`  Warming up with ${warmUpIterations} iterations...`);
+    for (let i = 0; i < warmUpIterations; i++) {
+        fn();
+    }
+    console.log('  Warm-up completed.');
+    
     let totalBytes = 0;
     const times = [];
     for (let i = 0; i < iterations; i++) {
-        const start = performance.now();
+        const start = process.hrtime.bigint();
         const result = fn();
-        const end = performance.now();
-        times.push(end - start);
+        const end = process.hrtime.bigint();
+        const timeNs = Number(end - start);
+        times.push(timeNs / 1e6); // Convert to milliseconds
         totalBytes += result;
     }
     const avgTime = times.reduce((a, b) => a + b, 0) / times.length;
