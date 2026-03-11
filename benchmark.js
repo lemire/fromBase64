@@ -26,7 +26,7 @@ function decodeBase64(str) {
 }
 
 // Benchmark function
-function benchmark(name, fn, iterations = 1000, warmUpIterations = 1000) {
+function benchmark(name, fn, iterations = 10000, warmUpIterations = 1000) {
     console.log(`Running benchmark: ${name}`);
     
     // Warm-up phase
@@ -37,13 +37,13 @@ function benchmark(name, fn, iterations = 1000, warmUpIterations = 1000) {
     console.log('  Warm-up completed.');
     
     let totalBytes = 0;
-    const times = [];
+    const times = new Array(iterations);
     for (let i = 0; i < iterations; i++) {
         const start = process.hrtime.bigint();
         const result = fn();
         const end = process.hrtime.bigint();
         const timeNs = Number(end - start);
-        times.push(timeNs / 1e6); // Convert to milliseconds
+        times[i] = timeNs / 1e6; // Convert to milliseconds
         totalBytes += result;
     }
     const avgTime = times.reduce((a, b) => a + b, 0) / times.length;
@@ -51,13 +51,28 @@ function benchmark(name, fn, iterations = 1000, warmUpIterations = 1000) {
     const gbps = avgBytesPerSec / (1000 ** 3);
     const sortedTimes = [...times].sort((a, b) => a - b);
     const p10 = sortedTimes[Math.floor(0.1 * (sortedTimes.length - 1))];
+    const p50 = sortedTimes[Math.floor(0.5 * (sortedTimes.length - 1))];
     const p90 = sortedTimes[Math.floor(0.9 * (sortedTimes.length - 1))];
     const p10BytesPerSec = (totalBytes / iterations) / (p10 / 1000);
+    const p50BytesPerSec = (totalBytes / iterations) / (p50 / 1000);
     const p90BytesPerSec = (totalBytes / iterations) / (p90 / 1000);
     const p10Gbps = p10BytesPerSec / (1000 ** 3);
+    const p50Gbps = p50BytesPerSec / (1000 ** 3);
     const p90Gbps = p90BytesPerSec / (1000 ** 3);
+    
+    // Display percentile blocks
+    console.log('  Percentile blocks (time in ms):');
+    for (let p = 0; p < 100; p += 10) {
+        const startIdx = Math.floor((p / 100) * (sortedTimes.length - 1));
+        const endIdx = Math.floor(((p + 10) / 100) * (sortedTimes.length - 1));
+        const blockTimes = sortedTimes.slice(startIdx, endIdx + 1);
+        const minTime = Math.min(...blockTimes);
+        const maxTime = Math.max(...blockTimes);
+        console.log(`    ${p}-${p+10}th percentile: min=${minTime.toFixed(3)}ms, max=${maxTime.toFixed(3)}ms`);
+    }
+    
     console.log(`  10th percentile throughput: ${p10Gbps.toFixed(3)} GB/s`);
-    console.log(`  Average throughput: ${gbps.toFixed(3)} GB/s`);
+    console.log(`  50th percentile throughput: ${p50Gbps.toFixed(3)} GB/s`);
     console.log(`  90th percentile throughput: ${p90Gbps.toFixed(3)} GB/s`);
 
     console.log();
