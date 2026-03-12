@@ -21,6 +21,12 @@ This project benchmarks the performance of `Uint8Array.fromBase64` for decoding 
 node benchmark.js
 ```
 
+To reduce GC jitter, use:
+
+```bash
+node --max-old-space-size=1000 --max-semi-space-size=512 --noconcurrent_sweeping benchmark.js
+```
+
 ### With Bun
 
 ```bash
